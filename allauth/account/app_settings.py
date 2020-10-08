@@ -146,6 +146,13 @@ class AppSettings(object):
         return self._setting("SIGNUP_FORM_CLASS", None)
 
     @property
+    def RESET_PASSWORD_FORM_CLASS(self):
+        """
+        Reset password form
+        """
+        return self._setting("RESET_PASSWORD_FORM_CLASS", None)
+
+    @property
     def USERNAME_REQUIRED(self):
         """
         The user is required to enter a username when signing up

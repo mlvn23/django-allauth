@@ -385,7 +385,33 @@ class SetPasswordForm(UserForm):
         get_adapter().set_password(self.user, self.cleaned_data["password1"])
 
 
-class ResetPasswordForm(forms.Form):
+class _DummyCustomResetPasswordForm(forms.Form):
+    pass
+
+
+def _base_reset_password_form_class():
+    if not app_settings.RESET_PASSWORD_FORM_CLASS:
+        return _DummyCustomResetPasswordForm
+    try:
+        fc_module, fc_classname = app_settings.RESET_PASSWORD_FORM_CLASS.rsplit('.', 1)
+    except ValueError:
+        raise exceptions.ImproperlyConfigured('%s does not point to a form'
+                                              ' class'
+                                              % app_settings.RESET_PASSWORD_FORM_CLASS)
+    try:
+        mod = import_module(fc_module)
+    except ImportError as e:
+        raise exceptions.ImproperlyConfigured('Error importing form class %s:'
+                                              ' "%s"' % (fc_module, e))
+    try:
+        fc_class = getattr(mod, fc_classname)
+    except AttributeError:
+        raise exceptions.ImproperlyConfigured('Module "%s" does not define a'
+                                              ' "%s" class' % (fc_module,
+                                                               fc_classname))
+    return fc_class
+
+class ResetPasswordForm(_base_reset_password_form_class()):
 
     email = forms.EmailField(
         label=_("E-mail"),
